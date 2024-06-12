@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Whack-a-Mole</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #ffffff;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="gameCanvas" width="800" height="400"></canvas>
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        const moleWidth = 100;
+        const moleHeight = 100;
+        const moleCount = 10; // Number of moles
+        const moleImage = new Image();
+        moleImage.src = 'mole.png'; // Path to your mole image
+        let moles = [];
+        let score = 0;
+        let timeLeft = 30; // Initial time limit in seconds
+        let timer = null; // Timer variable
+
+        function drawMole(x, y) {
+            ctx.drawImage(moleImage, x, y, moleWidth, moleHeight);
+        }
+
+        function drawScore() {
+            ctx.fillStyle = "#000000"; // Black color
+            ctx.font = "20px Arial";
+            ctx.fillText("Score: " + score, 10, 30);
+        }
+
+        function drawTime() {
+            ctx.fillStyle = "#000000"; // Black color
+            ctx.font = "20px Arial";
+            ctx.fillText("Time: " + timeLeft, canvas.width - 100, 30);
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            for (let mole of moles) {
+                drawMole(mole.x, mole.y);
+            }
+
+            drawScore();
+            drawTime();
+        }
+
+        function createMoles() {
+            moles = [];
+            for (let i = 0; i < moleCount; i++) {
+                const x = Math.floor(Math.random() * (canvas.width - moleWidth));
+                const y = Math.floor(Math.random() * (canvas.height - moleHeight));
+                moles.push({ x, y });
+            }
+        }
+
+        function whack(event) {
+            const rect = canvas.getBoundingClientRect();
+            const mouseX = event.clientX - rect.left;
+            const mouseY = event.clientY - rect.top;
+
+            for (let i = 0; i < moles.length; i++) {
+                const mole = moles[i];
+                if (mouseX >= mole.x && mouseX <= mole.x + moleWidth &&
+                    mouseY >= mole.y && mouseY <= mole.y + moleHeight) {
+                    moles.splice(i, 1);
+                    score++;
+                }
+            }
+
+            draw();
+        }
+
+        canvas.addEventListener('mousedown', whack);
+
+        function countdown() {
+            timeLeft--;
+            if (timeLeft === 0 || moles.length === 0) {
+                clearInterval(timer);
+                if (moles.length === 0) {
+                    alert("Congratulations! You whacked all the moles! Your score: " + score);
+                } else {
+                    alert("Time's up! Your score: " + score);
+                }
+            } else {
+                draw();
+            }
+        }
+
+        moleImage.onload = function() {
+            createMoles();
+            draw();
+            timer = setInterval(countdown, 1000);
+        };
+    </script>
+</body>
+</html>
